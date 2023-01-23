@@ -12,6 +12,10 @@ var TrackerSchema = mongoose.Schema({
     Type: String,
     Poster: String,
     imdbID: String,
+    Remarks: {
+        jujuba: Number,
+        tito: Number
+    },
     Status: 'Watched' | 'To Watch' | 'In Progress'
 });
 
@@ -27,6 +31,7 @@ app.use('/movies', newsRoutes);
 
 app.post('/tracker', (req, res) => {
     try {
+        console.log(req.body)
         var tracker1 = new Tracker(req.body);
 
         tracker1.save(function (err, tracker) {
@@ -44,7 +49,7 @@ app.patch('/tracker', (req, res) => {
     try {
         Tracker.updateOne({ imdbID: req.body.imdbID  }, req.body, (err, tracker) => {
             if (!err) {
-                res.json({ msg: "Tracker updated" });
+                res.json(req.body);
             } else {
                 console.log("Error updating :" + err);
             }
