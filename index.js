@@ -40,6 +40,36 @@ app.post('/tracker', (req, res) => {
     }
 })
 
+app.patch('/tracker', (req, res) => {
+    try {
+        Tracker.updateOne({ imdbID: req.body.imdbID  }, req.body, (err, tracker) => {
+            if (!err) {
+                res.json({ msg: "Tracker updated" });
+            } else {
+                console.log("Error updating :" + err);
+            }
+        });
+    } catch (e) {
+        console.log(e)
+        res.status(500).send(e);
+    }
+})
+
+app.delete('/tracker', (req, res) => {
+    try {
+        Tracker.remove({ imdbID: req.query.imdbID  }, (err, tracker) => {
+            if (!err) {
+                res.json({ msg: "tracker deleted", deleted: tracker });
+            } else {
+                console.log("Error removing :" + err);
+            }
+        });
+    } catch (e) {
+        console.log(e)
+        res.status(500).send(e);
+    }
+})
+
 app.get('/tracker', async (req, res) => {
     try {
         Tracker.find({}, function(err, trackers) {
