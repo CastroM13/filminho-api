@@ -16,6 +16,10 @@ var TrackerSchema = mongoose.Schema({
         jujuba: Number,
         tito: Number
     },
+    Reviews: {
+        jujuba: String,
+        tito: String
+    },
     Status: 'Watched' | 'To Watch' | 'In Progress'
 });
 
