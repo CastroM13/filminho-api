@@ -23,9 +23,4 @@ router.get('', (req, res) => {
         .then(e => res.send(e));
 });
 
-router.get('/watched', async (req, res) => {
-    const insertResult = await collection.insertMany([{ a: 1 }, { a: 2 }, { a: 3 }]);
-    console.log('Inserted documents =>', insertResult);
-});
-
 module.exports = router;

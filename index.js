@@ -6,6 +6,12 @@ const app = express();
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cors())
+
+function tryCatch(func, fail) {
+    try { return func() }
+    catch(e) { return fail }
+}
+
 var TrackerSchema = mongoose.Schema({
     Title: String,
     Year: String,
@@ -23,15 +29,18 @@ var TrackerSchema = mongoose.Schema({
     Status: 'Watched' | 'To Watch' | 'In Progress'
 });
 
+var TokenSchema = mongoose.Schema({ token: String });
+
 var Tracker = mongoose.model('Tracker', TrackerSchema, 'trackerstore');
+
+var Token = mongoose.model('Token', TokenSchema, 'token');
 
 app.get("/", (req, res) => {
     res.json({ message: 'Hello World!' })
 });
 
-const newsRoutes = require('./routes/index.js');
-
-app.use('/movies', newsRoutes);
+const movies = require('./routes/index.js');
+app.use('/movies', movies);
 
 app.post('/tracker', (req, res) => {
     try {
@@ -51,7 +60,7 @@ app.post('/tracker', (req, res) => {
 
 app.patch('/tracker', (req, res) => {
     try {
-        Tracker.updateOne({ imdbID: req.body.imdbID  }, req.body, (err, tracker) => {
+        Tracker.updateOne({ imdbID: req.body.imdbID }, req.body, (err, tracker) => {
             if (!err) {
                 res.json(req.body);
             } else {
@@ -66,7 +75,7 @@ app.patch('/tracker', (req, res) => {
 
 app.delete('/tracker', (req, res) => {
     try {
-        Tracker.remove({ imdbID: req.query.imdbID  }, (err, tracker) => {
+        Tracker.remove({ imdbID: req.query.imdbID }, (err, tracker) => {
             if (!err) {
                 res.json({ msg: "tracker deleted", deleted: tracker });
             } else {
@@ -81,20 +90,36 @@ app.delete('/tracker', (req, res) => {
 
 app.get('/tracker', async (req, res) => {
     try {
-        Tracker.find({}, function(err, trackers) {
-          var trackerMap = [];
-      
-          trackers.forEach(function(tracker) {
-            trackerMap.push(tracker);
-          });
-      
-          res.send(trackerMap);  
+        Tracker.find({}, function (err, trackers) {
+            var trackerMap = [];
+
+            trackers.forEach(function (tracker) {
+                trackerMap.push(tracker);
+            });
+
+            res.send(trackerMap);
         });
     } catch (e) {
         console.log(e)
         res.status(500).send(e);
     }
 })
+
+app.get('/tracker/:id', async (req, res) => {
+    try {
+        Tracker.find({ imdbID: req.params.id }, function (err, trackers) {
+            res.send(trackers[0]);
+        });
+    } catch (e) {
+        console.log(e)
+        res.status(500).send(e);
+    }
+})
+
+app.post('/token',(req, res) => tryCatch(
+    Token.findOne({ 'token': req.body.token }, (err, token) => token ? res.send(token) : res.status(404).send({message: 'Token inválido'})),
+    (e) => res.status(500).send(e))
+);
 
 const DB_USER = process.env.DB_USER;
 const DB_PASSWORD = encodeURIComponent(process.env.DB_PASSWORD);
